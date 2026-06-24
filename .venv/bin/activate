@@ -1,0 +1,46 @@
+# Star Rift dev environment — source this file: source .venv/bin/activate
+
+if [ -n "${STARRIFT_VENV:-}" ]; then
+    echo "Star Rift environment is already active."
+    return 0 2>/dev/null || exit 0
+fi
+
+_STARRIFT_VENV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
+_STARRIFT_PROJECT_ROOT="$(cd "${_STARRIFT_VENV_DIR}/.." && pwd)"
+
+export STARRIFT_VENV=1
+export STARRIFT_ROOT="${_STARRIFT_PROJECT_ROOT}"
+
+_OLD_STARRIFT_PATH="${PATH}"
+export PATH="${_STARRIFT_VENV_DIR}/bin:${PATH}"
+
+if [ -z "${STARRIFT_PS1:-}" ]; then
+    STARRIFT_PS1="${PS1:-}"
+    export STARRIFT_PS1
+fi
+PS1="(star rift) ${STARRIFT_PS1}"
+
+deactivate() {
+    if [ -n "${_OLD_STARRIFT_PATH+x}" ]; then
+        PATH="${_OLD_STARRIFT_PATH}"
+        unset _OLD_STARRIFT_PATH
+    fi
+
+    if [ -n "${STARRIFT_PS1:-}" ]; then
+        PS1="${STARRIFT_PS1}"
+        unset STARRIFT_PS1
+    fi
+
+    unset STARRIFT_VENV
+    unset STARRIFT_ROOT
+    unset -f deactivate 2>/dev/null
+
+    echo "Star Rift environment deactivated."
+}
+
+cd "${STARRIFT_ROOT}" || return 1 2>/dev/null || exit 1
+
+echo "Star Rift environment activated."
+echo "  Project: ${STARRIFT_ROOT}"
+echo "  Commands: build | run | clean"
+echo "  Deactivate: deactivate"

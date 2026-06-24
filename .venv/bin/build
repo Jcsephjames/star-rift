@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$ROOT"
+
+if command -v brew >/dev/null 2>&1; then
+    RAYLIB_PREFIX="$(brew --prefix raylib 2>/dev/null || brew --prefix)"
+else
+    RAYLIB_PREFIX="/opt/homebrew/opt/raylib"
+fi
+
+INCLUDE_DIR="${RAYLIB_PREFIX}/include"
+LIB_DIR="${RAYLIB_PREFIX}/lib"
+
+if [ ! -f "${INCLUDE_DIR}/raylib.h" ]; then
+    echo "raylib not found. Install it with: brew install raylib"
+    exit 1
+fi
+
+DEV_FLAGS="-DDEV_BUILD"
+if [ "${STAR_RIFT_RELEASE:-}" = "1" ]; then
+    DEV_FLAGS=""
+    echo "Building Star Rift (release)..."
+else
+    echo "Building Star Rift (dev)..."
+fi
+
+g++ -std=c++17 ${DEV_FLAGS} main.cpp \
+    src/core/*.cpp src/ui/*.cpp src/gameplay/*.cpp src/meta/*.cpp \
+    -Iheader/core -Iheader/ui -Iheader/gameplay -Iheader/meta \
+    -I"${INCLUDE_DIR}" \
+    -L"${LIB_DIR}" -lraylib \
+    -Wl,-rpath,"${LIB_DIR}" \
+    -framework OpenGL -framework Cocoa -framework IOKit \
+    -framework CoreVideo -framework CoreAudio \
+    -o game
+
+echo "Build complete: ${ROOT}/game"
