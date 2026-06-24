@@ -1,6 +1,6 @@
 # Star Rift
 
-A top-down space shooter built with [raylib](https://www.raylib.com/) (C++17). Fight through escalating rift waves, draft run upgrades from scrap, survive asteroid fields, defeat faction bosses and the Death Star, then spend credits on ships and hangar upgrades.
+**v1.0** — A top-down space shooter built with [raylib](https://www.raylib.com/) (C++17). Fight through escalating rift waves, draft run upgrades from scrap, survive asteroid fields, defeat faction bosses and the Death Star, then spend credits on ships and hangar upgrades.
 
 ## Requirements
 
@@ -19,7 +19,7 @@ make clean    # removes the binary
 
 The build script looks for raylib via `brew --prefix raylib`. If the build fails, confirm raylib is installed and try `make build` again.
 
-**Release build** (strips dev-only settings from the binary):
+**Release build** (strips dev-only settings and console debug output from the binary):
 
 ```bash
 STAR_RIFT_RELEASE=1 make build
@@ -37,7 +37,7 @@ STAR_RIFT_RELEASE=1 make build
 main.cpp              Entry point and screen routing
 header/               Headers grouped by core, ui, gameplay, meta
 src/core/             Save data, audio, textures, difficulty
-src/ui/               Menus, overlays, run summary
+src/ui/               Menus, overlays, run summary, pause menu
 src/gameplay/         Player, enemies, lasers, asteroids, game loop
 src/meta/             Credits, hangar upgrades, card draft, run history
 .venv/bin/            Build, run, and clean scripts invoked by make
@@ -69,9 +69,10 @@ Press **C** on the main menu (or **P → Controls** in-game) for the full contro
 | Pause menu | P | Resume |
 | Card draft | A / D, arrows | Browse cards |
 | Card draft | 1–4 / Enter | Pick upgrade |
+| Card draft | Click | Pick highlighted card |
 | Run summary | R | Restart run |
 | Run summary | M | Return to menu |
-| Run summary (victory) | C / Enter | Continue endless |
+| Run summary (victory) | C / Enter | Continue endless (Rift only) |
 | Hangar | 1–8 | Purchase or toggle upgrade |
 | Collections | A / D | Browse ships |
 | Collections | Enter / Space | Purchase ship |
@@ -86,7 +87,13 @@ Press **C** on the main menu (or **P → Controls** in-game) for the full contro
 
 ### Main Menu
 
-Six options: **Rift Fight**, **Asteroids Mode**, **Hangar**, **Collections**, **Run History**, and **Settings**. Your credit balance and a **Rift Victories** counter (Death Star wins) are shown above the menu. A credit-goal nudge points toward the next affordable hangar or ship unlock.
+Six options: **Rift Fight**, **Asteroids Mode**, **Hangar**, **Collections**, **Run History**, and **Settings**.
+
+Above the menu you'll see:
+- **Credits** (top right)
+- **Rift Victories** — Death Star wins in Rift Fight
+- **Asteroids Victories** — sector-secured wins in Asteroids Mode
+- A **credit-goal nudge** pointing toward the next affordable hangar upgrade or ship unlock
 
 ### Rift Fight
 
@@ -98,9 +105,11 @@ The main survival mode. Enemies and asteroids spawn in escalating waves (~40 sec
 | **Surge** | ~1.4× spawn rate, +1 enemy cap |
 | **Collapse** | ~1.8× spawn rate, +2 enemy cap |
 
-**Asteroid fields** — Each wave has a ~15% chance to become an asteroid field instead of a combat wave. Fields last ~28 seconds, spawn heavier asteroid pressure, and show an "Asteroid Field" HUD label with boss/finale milestones.
+**Wave HUD** — The wave display shows your current wave plus milestone markers for **Boss 10** and **Finale 20** (highlighted as you approach each).
 
-**Card draft** — Collect scrap during a run. Every 100 scrap (then every +10 after each draft), the game pauses and offers four upgrade cards. One slot is always a full hull repair; the other three are random upgrades from Common through Legendary rarity. Picking a card clears your scrap and triggers a brief EMP pulse.
+**Asteroid fields** — Each wave has a ~15% chance to become an asteroid field instead of a combat wave. Fields last ~28 seconds and spawn heavier asteroid pressure, with an "Asteroid Field" announcement.
+
+**Card draft** — Collect scrap during a run. Every 100 scrap (then every +10 after each draft), the game pauses and offers four upgrade cards. One slot is always a full hull repair; the other three are random upgrades from Common through Legendary rarity. Trade-off legendaries show a warning on the card. Picking a card clears your scrap and triggers a brief EMP pulse.
 
 **Boss waves**
 
@@ -111,17 +120,25 @@ The main survival mode. Enemies and asteroids spawn in escalating waves (~40 sec
 
 After victory, the run summary offers **Continue endless** (waves keep climbing past 20 with escalating pressure), **Restart**, or **Return to menu**. Victory credits are locked in when you win; endless play is for glory and high scores.
 
-Runs earn credits and are logged in Run History with wave, kills, scrap, upgrades picked, victory status, and credit breakdown.
+Runs earn credits and are logged in Run History with wave, kills, scrap, upgrades picked, **VICTORY** status, and a full credit breakdown.
 
 ### Asteroids Mode
 
 Classic asteroid-dodging mode with screen wrap on the Y axis. No enemy ships — just asteroids at a faster spawn rate. Difficulty still affects asteroid spawn speed. High score is points-based. No card draft in this mode.
 
-**Victory** — End a run in victory (with credits) by reaching any one of:
+**Victory HUD** — The score panel shows live progress toward all three win conditions:
+
+- Time: `current / 5:00`
+- Score: `current / 5,000`
+- Clears: `current / 100`
+
+**Victory** — End a run in victory (with credits) by reaching **any one** of:
 
 - 5 minutes survived
 - 5,000 points
 - 100 asteroids cleared
+
+Wins are tracked on the main menu (**Asteroids Victories**) and in Run History as **SECTOR SECURED**.
 
 ### Hangar
 
@@ -146,16 +163,19 @@ Browse all nine ships, view per-ship stats and records, and unlock new ships wit
 |------|-------|------|
 | Starter | X-Wing, TIE Fighter | Free |
 | Mid | Y-Wing, TIE Bomber | 3,000 |
-| Elite | Star Fighter, Ship Two, Death Fighter | 6,000 |
+| Elite | Star Fighter, A-Wing, Death Fighter | 6,000 |
 | Boss | Shlasher, Falcon | 10,000 |
 
 ### Run History
 
-Review your last 10 runs for Rift Fight and Asteroids (separate tabs). Rift entries show ship, wave, kills, scrap, upgrades, victory status, and credits earned. Asteroids entries show ship, score, scrap, time, and credits.
+Review your last 10 runs for Rift Fight and Asteroids (separate tabs).
+
+- **Rift** entries show ship, wave, kills, scrap, upgrades, **VICTORY** tag, and credits earned
+- **Asteroids** entries show ship, score, scrap, time, **SECTOR SECURED** tag, and credits
 
 ### Settings
 
-Adjust Y wrapping, direction pointer, master/SFX/music volume, and mute. Press **`** (grave) to toggle debug mode, which reveals dev-only options (spawn toggles, ship picker, enemy debug).
+Adjust Y wrapping, direction pointer, master/SFX/music volume, and mute. Press **`** (grave) to toggle debug mode, which reveals dev-only options (spawn toggles, ship picker, enemy debug). Debug options are hidden in release builds (`STAR_RIFT_RELEASE=1 make build`).
 
 ## Credits
 
@@ -167,7 +187,7 @@ Credits are earned at the end of each run. Runs shorter than 5 seconds earn noth
 kills × 3  +  scrap ÷ 4  +  time ÷ 2  +  wave × 8  [+ victory bonus if applicable]
 ```
 
-Victory bonus: `500 + wave × 25` (awarded when the Death Star is destroyed, or when an Asteroids victory condition is met).
+**Victory bonus:** `500 + wave × 25` — awarded when the Death Star is destroyed (Rift) or when an Asteroids victory condition is met.
 
 **Bounty Scanner** (hangar upgrade #8) multiplies the total by 1.15×.
 
@@ -177,4 +197,8 @@ The run summary screen shows a full credit breakdown and nudges you toward the n
 
 Progress is stored in **`starrift_save.txt`** in the project root (same directory you run `./game` from).
 
-The save includes credits, unlocked ships, hangar upgrades, high scores, per-ship stats, audio settings, difficulty preference, rift victory count, and run history. Delete the file to reset all progress.
+The save includes credits, unlocked ships, hangar upgrades, high scores, per-ship stats, audio settings, difficulty preference, **rift victory count**, **asteroids victory count**, and run history. Delete the file to reset all progress.
+
+## Version History
+
+- **v1.0** — Initial release: Rift Fight with card draft, boss waves, Death Star finale, endless mode; Asteroids Mode with three victory paths; eight hangar upgrades; nine unlockable ships; three difficulty tiers; pause menu and run summary; persistent credits and run history.
