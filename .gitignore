@@ -2,3 +2,4 @@ game
 *.o
 starrift_save.txt
 .DS_Store
+generic_images/
